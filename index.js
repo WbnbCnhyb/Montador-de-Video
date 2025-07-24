@@ -39,7 +39,7 @@ app.post("/montar", async (req, res) => {
       .join("\n");
     fs.writeFileSync("lista.txt", lista);
 
-    // Montar vídeo
+    // Montar vídeo com ffmpeg
     const comando = `ffmpeg -f concat -safe 0 -i lista.txt -i audio.mp3 -shortest -vf "fade=t=in:st=0:d=1,fade=t=out:st=2:d=1" -y output.mp4`;
     exec(comando, (err) => {
       if (err) {
@@ -52,6 +52,11 @@ app.post("/montar", async (req, res) => {
   }
 });
 
-// ✅ CORREÇÃO AQUI: usar porta dinâmica para Render
+// ✅ Rota para verificação de status (usada pelo n8n)
+app.get("/", (req, res) => {
+  res.status(200).send("Servidor online");
+});
+
+// ✅ Usar porta dinâmica (obrigatório no Render)
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
