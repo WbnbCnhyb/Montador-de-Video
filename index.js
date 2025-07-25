@@ -31,6 +31,11 @@ app.post("/montar", async (req, res) => {
       return res.status(400).send({ error: "Dados incompletos ou inválidos." });
     }
 
+    // ✅ Garante que a pasta public existe (antes de salvar imagens e vídeo)
+    if (!fs.existsSync("public")) {
+      fs.mkdirSync("public");
+    }
+
     const imagensBaixadas = [];
     for (let i = 0; i < imagens.length; i++) {
       const url = imagens[i];
@@ -40,10 +45,12 @@ app.post("/montar", async (req, res) => {
         const writer = fs.createWriteStream(nome);
         const response = await axios({ url, responseType: "stream", timeout: 10000 });
         response.data.pipe(writer);
+
         await new Promise((resolve, reject) => {
           writer.on("finish", resolve);
           writer.on("error", reject);
         });
+
         imagensBaixadas.push(nome);
       } catch (err) {
         console.error(`❌ Erro ao baixar imagem ${i}:`, url);
@@ -56,6 +63,7 @@ app.post("/montar", async (req, res) => {
       const writerAudio = fs.createWriteStream("audio.mp3");
       const audioRes = await axios({ url: audio, responseType: "stream", timeout: 10000 });
       audioRes.data.pipe(writerAudio);
+
       await new Promise((resolve, reject) => {
         writerAudio.on("finish", resolve);
         writerAudio.on("error", reject);
