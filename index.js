@@ -10,7 +10,22 @@ app.use(express.static("public")); // Pasta pública para servir o vídeo
 
 app.post("/montar", async (req, res) => {
   try {
-    const { imagens, audio } = req.body;
+    let imagens = [];
+    let audio = "";
+
+    // ✅ Corrige entrada JSON como string (Render às vezes envia assim)
+    if (typeof req.body === "string") {
+      try {
+        const parsed = JSON.parse(req.body);
+        imagens = parsed.imagens;
+        audio = parsed.audio;
+      } catch (err) {
+        return res.status(400).send({ error: "JSON inválido" });
+      }
+    } else {
+      imagens = req.body.imagens;
+      audio = req.body.audio;
+    }
 
     if (!imagens || !audio || !Array.isArray(imagens) || imagens.length === 0) {
       return res.status(400).send({ error: "Dados incompletos ou inválidos." });
@@ -58,7 +73,7 @@ app.post("/montar", async (req, res) => {
 
     const outputPath = path.join("public", "output.mp4");
     const comando = `ffmpeg -f concat -safe 0 -i lista.txt -i audio.mp3 -shortest -vf "fade=t=in:st=0:d=1,fade=t=out:st=2:d=1" -y ${outputPath}`;
-    
+
     exec(comando, (err) => {
       if (err) {
         console.error("❌ Erro ao rodar FFmpeg:", err.message);
