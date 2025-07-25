@@ -1,3 +1,13 @@
+const express = require("express");
+const axios = require("axios");
+const fs = require("fs");
+const { exec } = require("child_process");
+const path = require("path");
+
+const app = express();
+app.use(express.json());
+app.use(express.static("public")); // Pasta pública para servir o vídeo
+
 app.post("/montar", async (req, res) => {
   try {
     const { imagens, audio } = req.body;
@@ -62,3 +72,10 @@ app.post("/montar", async (req, res) => {
     res.status(500).send({ error: err.message || "Erro inesperado." });
   }
 });
+
+app.get("/", (req, res) => {
+  res.status(200).send("Servidor online");
+});
+
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
